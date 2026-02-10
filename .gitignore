@@ -1,0 +1,8 @@
+.env
+tsconfig.json
+package.json
+package-lock.json
+install.sh
+key.pem
+cert.pem
+docker.txt
