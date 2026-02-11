@@ -92,8 +92,26 @@ app.post('/api/order/limit-buy', authenticateJWT, async (req, res) => {
 // 2-2. 미들웨어
 const authenticateInternal = (req, res, next) => {
   const key = req.headers['x-api-key'];
-  if (key !== process.env.INTERNAL_SECRET) {
+  const timestamp = req.headers['x-timestamp']
+  if (!key || key !== process.env.INTERNAL_SECRET) {
     return res.status(401).json({ message: 'Invalid key' });
+  }
+  if (!timestamp || Math.abs(Date.now() - timestamp) > 5000) {
+    return res.status(401).json({ message: "Out of Timestamp"})
+  }
+
+  // 서버에서 다시 서명 비교
+  // 2️⃣ 서버에서 다시 서명 계산
+  const payload = JSON.stringify(req.body) + timestamp;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.INTERNAL_SECRET)
+    .update(payload)
+    .digest("hex");
+
+  // 3️⃣ 서명 비교
+  if (signature !== expectedSignature) {
+    return res.status(401).json({ message: "Invalid signature" });
   }
   next();
 };
