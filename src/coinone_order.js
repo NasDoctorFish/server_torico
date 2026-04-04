@@ -110,6 +110,7 @@ const authenticateInternal = (req, res, next) => {
     .digest("hex");
 
   // 3️⃣ 서명 비교
+  const signature = req.headers['x-signature'];
   if (signature !== expectedSignature) {
     return res.status(401).json({ message: "Invalid signature" });
   }
@@ -119,7 +120,7 @@ const authenticateInternal = (req, res, next) => {
 
 // 2-2. 보호된 주문 API 자동화 프로그램용엑세스 미들웨어 authenticateInternal로 변경, quote, target, side, price, qty, postOnly 다 채워서 보내기
 app.post('/api/order/limit-buy/advanced', authenticateInternal, async (req, res) => {
-    console.log(`인증 성공! 요청 유저: ${req.user.email}`);
+    console.log(`인증 성공! (internal api)`);
 
     const { quote, target, side, price, qty, postOnly} = req.body;
     if (!quote || !target || !side || !price || !qty || !postOnly) return res.status(400).json({ error: "필드 부족" });

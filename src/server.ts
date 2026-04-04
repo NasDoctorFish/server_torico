@@ -87,7 +87,7 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
 const authorizeSignal = (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers['x-api-key'];
   const authHeader = req.headers.authorization ?? '';
-  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
 
   if (SIGNAL_API_KEY && apiKey === SIGNAL_API_KEY) {
     return next();
@@ -283,6 +283,7 @@ app.post('/api/order', authenticateJWT, async (req: Request, res: Response) => {
     const result = await coinoneClient.placeOrder(req.body as OrderRequest);
     return res.json({ success: true, data: result });
   } catch (error) {
+    console.log(res);
     return res.status(400).json({
       success: false,
       message: (error as Error).message
@@ -314,9 +315,10 @@ app.use((req: Request, res: Response) => {
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
+  console.log("🔥 REQUEST HIT:", req.method, req.url);
   res.status(500).json({ success: false, message: '서버 에러가 발생했습니다', error: err.message });
 });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Coinone Home Server running at http://localhost:${PORT}`);
